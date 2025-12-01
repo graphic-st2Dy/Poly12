@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>زەبر 𝜏</title>
+<style>
+  body {
+    background: radial-gradient(circle at center, #0b1025, #030712);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    color: white;
+    font-family: monospace;
+  }
+  canvas {
+    background: transparent;
+  }
+</style>
+</head>
+<body>
+<canvas id="scene" width="500" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
+const cx = 220;   // pivot x
+const cy = 100;   // pivot y
+const d = 200;    // rope length
+let theta = Math.PI / 2; // start: 90° (horizontal)
+let speed = 0.0015; // speed of rotation
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Gravity reference line
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx, cy + d + 80);
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = "#44f";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#44f";
+  ctx.font = "16px monospace";
+  
+
+  // Object position
+  const x = cx + d * Math.sin(theta);
+  const y = cy + d * Math.cos(theta);
+
+  // Rope (d)
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(x, y);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#fff";
+  ctx.stroke();
+
+
+  // Label "d"
+  const midX = (cx + x) / 2;
+  const midY = (cy + y) / 2;
+  ctx.fillStyle = "#fff";
+  ctx.font = "16px monospace";
+  ctx.fillText("d", midX + 4, midY - 6);
+
+  // d·sin(θ) horizontal line
+  const xLine = cx + d * Math.sin(theta);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(xLine, cy);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "red";
+  ctx.setLineDash([6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "red";
+  ctx.font = "20px monospace";
+  ctx.fillText("???", cx + (d * Math.sin(theta)) / 2 - 20, cy - 10);
+
+  // Gravity force line
+  const startFy = cy;
+  const endFy = y + 60;
+  ctx.beginPath();
+  ctx.moveTo(x, startFy);
+  ctx.lineTo(x, endFy);
+  ctx.strokeStyle = "yellow";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Arrowhead
+  ctx.beginPath();
+  ctx.moveTo(x - 5, endFy - 10);
+  ctx.lineTo(x + 5, endFy - 10);
+  ctx.lineTo(x, endFy);
+  ctx.closePath();
+  ctx.fillStyle = "yellow";
+  ctx.fill();
+
+  // Label "F"
+  ctx.fillStyle = "yellow";
+  ctx.fillText("F", x + 10, y + 50);
+
+  // Object
+  ctx.beginPath();
+  ctx.arc(x, y, 15, 0, 2 * Math.PI);
+  ctx.fillStyle = "#0f8";
+  ctx.fill();
+
+  // θ arc
+  ctx.beginPath();
+  ctx.arc(x, y, 40, Math.PI / 2 - theta + 3.14/1, Math.PI / 2 + 3.14/1, false);
+  ctx.strokeStyle = "orange";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = "orange";
+  ctx.fillText("θ", x - 45 * Math.cos(Math.PI / 2 - theta / 1), y - 45 * Math.sin(Math.PI / 2 - theta / 2));
+  
+  // 1. Set the font and style
+ctx.font = "18px monospace";   // font size and type
+ctx.fillStyle = "white";      // text color
+
+// 2. Set the text content
+const text = "تەوەرەی خولانەوە";
+
+// 3. Draw text at specific coordinates (x, y)
+ctx.fillText(text, cx - 140, cy - 0); // x=100, y=150
+
+  // Draw a filled circle
+ctx.beginPath();             // start a new path
+ctx.arc(cx, cy, 6, 0, 2 * Math.PI); // x, y, radius, startAngle, endAngle
+ctx.fillStyle = "gray";      // fill color
+ctx.fill();                  // fill the circle
+  
+  // Animate: fall down, restart at top
+  if (theta > 0.01) {
+    theta -= speed;
+    speed = speed * 1.003;
+    if (theta <= 0.01) {
+      setTimeout(() => { theta = Math.PI / 2; speed = 0.0015; }, 50); // restart
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>
