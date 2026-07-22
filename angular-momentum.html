@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گۆشەتەوژمی پارێزراو</title>
+<style>
+  
+      :root{
+      --subtitle-duration: 6s; /* time for each caption cycle (fade in + hold + fade out) */
+      --subtitle-font-size: 2.25rem; /* adjust for global scale */
+      --subtitle-max-width: 80ch;
+      --glow-color: rgba(255,255,255,0.12);
+    }html,body{
+  height:100%;
+  margin:0;
+  background: radial-gradient(1200px 500px at 50% 20%, rgba(40,40,60,0.18), transparent 20%), linear-gradient(180deg, #070617 0%, #0d0a12 100%);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color: #fff;
+  overflow:hidden;
+}
+
+/* Floating subtitle element placed directly in body (not inside restrictive container) */
+.subtitle-wrapper{
+  position: absolute; /* free on the screen */
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 12vh; /* altitude above bottom, change as you like */
+  pointer-events: none; /* lets clicks pass through */
+  text-align:center;
+  width: min(95%, 1100px);
+  display:block;
+}
+
+.subtitle{
+  display:inline-block; /* content sized by text */
+  max-width: var(--subtitle-max-width);
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: var(--subtitle-font-size);
+  line-height:1.1;
+  letter-spacing:0.02em;
+  text-transform: none;
+  text-align: center;
+  padding: 0.35em 0.6em;
+  margin-top: 10vh;
+  background: transparent;
+  border-radius: 8px;
+  color: #fff;
+  text-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.6);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+
+  /* animation is only opacity + scale (no translate) */
+  animation-name: fadeScale;
+  animation-duration: var(--subtitle-duration);
+  animation-timing-function: cubic-bezier(.2,.9,.2,1);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  will-change: opacity, transform;
+}
+
+/* small caption (optional) */
+.subtitle .small{
+  display:block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.55em;
+  opacity:0.85;
+  margin-top:0.35em;
+  font-weight:300;
+}
+
+@keyframes fadeScale{
+  0%{ opacity:0; transform: scale(0.98); }
+  8%{ opacity:1; transform: scale(1.02); }
+  72%{ opacity:1; transform: scale(1); }
+  100%{ opacity:0; transform: scale(0.98); }
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce){
+  .subtitle{ animation: none; opacity:1; transform: none; }
+}
+
+/* Make it look cinematic on smaller screens */
+@media (max-width:600px){
+  :root{ --subtitle-font-size: 1.25rem; }
+  .subtitle-wrapper{ bottom: 8vh; }
+  .subtitle{ padding: 0.25em 0.5em; border-radius:6px; }
+}
+  
+  body {
+    margin: 0;
+    background: #0d0d0d;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: sans-serif;
+  }
+  canvas {
+    background: radial-gradient(circle at center, #1a1a1a 40%, #000 100%);
+    border-radius: 50%;
+  }
+  .control {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.75rem;
+  }
+  input[type="range"] {
+    width: 200px;
+  }
+
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="400" height="400"></canvas>
+<div class="control">
+  <label>r</label>
+  <input id="particleRange" type="range" min="0" max="1" step="0.01" value="1">
+</div>
+
+      <div id="subtitle" class="subtitle" role="status">
+      <!-- text injected by JavaScript -->
+      <span id="caption">A whisper in the dark...</span>
+      <span class="small" id="caption-small"></span>
+    </div>
+  </div> 
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const range = document.getElementById('particleRange');
+
+const cx = canvas.width / 2;
+const cy = canvas.height / 2;
+const discRadius = 150;
+let particleRatio = 1; // 1 = edge, 0 = center
+let angle = 0;
+
+function drawDisc() {
+  ctx.beginPath();
+  ctx.arc(cx, cy, discRadius + 50, 0, Math.PI * 2);
+  ctx.fillStyle = '#222';
+  ctx.fill();
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function drawParticle() {
+  const radius = discRadius * (particleRatio + 0.1);
+  const px = cx + Math.cos(angle) * (radius);
+  const py = cy + Math.sin(angle) * (radius);
+
+  ctx.beginPath();
+  ctx.arc(px, py, 8, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff8800';
+  ctx.shadowColor = '#ff8800';
+  ctx.shadowBlur = 15;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawDisc();
+  drawParticle();
+
+  // speed increases as particle gets closer to center
+  const speed = 0.05 + (1 - particleRatio) * 0.3;
+  angle += speed;
+
+  requestAnimationFrame(animate);
+}
+
+range.addEventListener('input', e => {
+  particleRatio = parseFloat(e.target.value);
+});
+
+animate();
+</script>
+  
+  <script>
+    (function(){
+      // Captions to cycle
+      const captions = [
+        {text: 'ئەمە ڕوو دەدات کاتێک گۆشە تەوژم پارێزراو بێت', small: ''},
+        {text: 'کەم بوونی نیوەتیرە دەبێتە هۆی کەم بوونی زەبری بارنەگۆڕی', small: ''},
+        {text: 'کەم بوونی زەبری بارنەگۆڕی دەبێتە هۆی زیاد بوونی گۆشەخێرایی', small: ''},
+        {text: 'لە گۆشەتەوژمی پارێزراودا گۆشەخێرایی لەگەڵ زەبری بارنەگۆڕی پەیوەندیان پێچەوانەیە', small: ''}
+      ];
+
+      const subtitle = document.getElementById('subtitle');
+      const captionEl = document.getElementById('caption');
+      const smallEl = document.getElementById('caption-small');
+
+      // Duration per caption should match --subtitle-duration in CSS
+      // Keep in seconds (number)
+      const durationSec = 15; // change to taste
+      // Set CSS variable for animation duration
+      subtitle.style.setProperty('--subtitle-duration', durationSec + 's');
+
+      let index = 0;
+      function showCaption(i){
+        const cap = captions[i % captions.length];
+        // Update text instantly — CSS handles fade/scale animation
+        captionEl.textContent = cap.text;
+        smallEl.textContent = cap.small || '';
+      }
+
+      // Initial
+      showCaption(index);
+
+      // Cycle on interval (durationSec seconds)
+      setInterval(() => {
+        index = (index + 1) % captions.length;
+        showCaption(index);
+      }, durationSec * 1000 - 400);
+
+      // Optional: pause animation when window/tab not visible to save CPU
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          subtitle.style.animationPlayState = 'paused';
+        } else {
+          subtitle.style.animationPlayState = 'running';
+        }
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
